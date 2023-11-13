@@ -10,19 +10,23 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class BookAnalyzer {
+    private static final String FILE_EXTENSION = ".txt";
+    private static final String DIRECTORY_NAME = "src";
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the title of the book to analyze: ");
         String bookTitle = scanner.nextLine();
 
-        Path harryPotter = Paths.get("src", bookTitle + ".txt");
+        Path harryPotter = Paths.get(DIRECTORY_NAME, bookTitle + FILE_EXTENSION);
         if (!isValidBook(harryPotter)) {
-            System.out.println("The book '" + bookTitle + "' is missing in the src/ directory or it is not a file.");
+            System.out.println("The book '"
+                    + bookTitle + "' is missing in the src/ directory or it is not a file.");
             return;
         }
 
-        try (InputStream inputStream = Files.newInputStream(harryPotter);
-             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+        try (InputStream fileInput = Files.newInputStream(harryPotter);
+             InputStreamReader reader = new InputStreamReader(fileInput, StandardCharsets.UTF_8)) {
             BufferedReader bufferedReader = new BufferedReader(reader);
 
             String content = bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
