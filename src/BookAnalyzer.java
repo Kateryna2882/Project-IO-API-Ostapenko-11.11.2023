@@ -27,16 +27,19 @@ public class BookAnalyzer {
 
         try (InputStream fileInput = Files.newInputStream(harryPotter);
              InputStreamReader reader = new InputStreamReader(fileInput, StandardCharsets.UTF_8)) {
-            BufferedReader bufferedReader = new BufferedReader(reader);
+            BufferedReader bookReader = new BufferedReader(reader);
 
-            String content = bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
-            Map<String, Integer> wordFrequencyMap = analyzeText(content);
-            List<String> topWords = getTopWords(wordFrequencyMap, 10);
+            String content = bookReader.lines().collect(Collectors.joining(System.lineSeparator()));
+            Map<String, Integer> wordStatistics = analyzeText(content);
+            List<String> topWords = getTopWords(wordStatistics, 10);
 
-            writeAndPrintStatistics(bookTitle, wordFrequencyMap, topWords);
+            writeAndPrintStatistics(bookTitle, wordStatistics, topWords);
+        } catch (FileNotFoundException e) {
+            System.out.println("The file not found : " + harryPotter);
 
         } catch (IOException e) {
             System.out.println("Error processing file '" + harryPotter + "': " + e.getMessage());
+//            e.printStackTrace(); // maybe add ?
         }
     }
 
@@ -45,28 +48,28 @@ public class BookAnalyzer {
     }
 
     private static Map<String, Integer> analyzeText(String text) {
-        Map<String, Integer> wordFrequencyMap = new HashMap<>();
+        Map<String, Integer> wordStatistics = new HashMap<>();
         String[] words = text.split("\\s+");
 
         for (String word : words) {
             word = word.replaceAll("[^a-zA-Z]", "").toLowerCase();
             if (word.length() > 2) {
-                wordFrequencyMap.put(word, wordFrequencyMap.getOrDefault(word, 0) + 1);
+                wordStatistics.put(word, wordStatistics.getOrDefault(word, 0) + 1);
             }
         }
 
-        return wordFrequencyMap;
+        return wordStatistics;
     }
 
-    private static List<String> getTopWords(Map<String, Integer> wordFrequencyMap, int topCount) {
-        return wordFrequencyMap.entrySet().stream()
+    private static List<String> getTopWords(Map<String, Integer> wordStatistics, int topCount) {
+        return wordStatistics.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .limit(topCount)
                 .map(Map.Entry::getKey)
                 .toList();
     }
 
-    private static void writeAndPrintStatistics(String bookTitle, Map<String, Integer> wordFrequencyMap,
+    private static void writeAndPrintStatistics(String bookTitle, Map<String, Integer> wordStatistics,
                                                 List<String> topWords) {
         String fileName = bookTitle + "_statistic.txt";
 
@@ -74,7 +77,7 @@ public class BookAnalyzer {
              OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
              BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
 
-            wordFrequencyMap.forEach((word, count) -> {
+            wordStatistics.forEach((word, count) -> {
                 try {
                     bufferedWriter.write(word + " -> " + count + "\n");
                 } catch (IOException e) {
@@ -82,13 +85,13 @@ public class BookAnalyzer {
                 }
             });
 
-            bufferedWriter.write("Total words: " + wordFrequencyMap.size() + "\n");
+            bufferedWriter.write("Total words: " + wordStatistics.size() + "\n");
 
             System.out.println("Statistics:");
 
-            topWords.forEach(word -> System.out.println(word + " -> " + wordFrequencyMap.get(word)));
+            topWords.forEach(word -> System.out.println(word + " -> " + wordStatistics.get(word)));
 
-            System.out.println("Total unique words: " + wordFrequencyMap.size());
+            System.out.println("Total unique words: " + wordStatistics.size());
 
         } catch (IOException e) {
             System.out.println("Error writing to file: " + e.getMessage());
